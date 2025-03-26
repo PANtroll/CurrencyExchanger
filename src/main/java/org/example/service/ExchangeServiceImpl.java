@@ -51,7 +51,7 @@ public class ExchangeServiceImpl implements ExchangeService {
     public List<NBPMidRate> buyPlnExchangeByCurrencies(List<String> currencies, Date date) {
 
         currencies = currencies.stream().map(currency -> currency.toUpperCase().trim()).toList();
-        List<NBPMidRate> nbpmidRateList = nbpService.getBuyExchangeForCurrencies(currencies, date);
+        List<NBPMidRate> nbpmidRateList = nbpService.getBuyExchangeForCurrencies(currencies, date);//todo change data structure
         nbpmidRateList.forEach(rate -> rate.setMid(BigDecimal.ONE.setScale(4, RoundingMode.HALF_UP).divide(rate.getMid(), RoundingMode.HALF_UP)));
         return nbpmidRateList;
     }

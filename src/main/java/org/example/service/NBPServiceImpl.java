@@ -56,7 +56,7 @@ public class NBPServiceImpl implements NBPService {
     }
 
     @Override
-    public List<NBPMidRate> getBuyExchangeForCurrencies(List<String> currencies, Date date) {//todo
+    public List<NBPMidRate> getBuyExchangeForCurrencies(List<String> currencies, Date date) {
         List<NBPMidRate> result = null;
         try {
             SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
