@@ -5,11 +5,14 @@ import lombok.extern.log4j.Log4j2;
 import org.example.dao.ExchangeForCurrencyDAO;
 import org.example.model.ExchangeForCurrencyEntity;
 import org.example.to.ExchangeForCurrency;
-import org.example.to.NBPRate;
+import org.example.to.NBPMidRate;
+import org.example.to.NBPSellRate;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -37,23 +40,27 @@ public class ExchangeServiceImpl implements ExchangeService {
 
         currency = currency.toUpperCase();
         ExchangeForCurrency result = null;
-        NBPRate nbpRate = nbpService.getSellExchangeForCurrency(currency, date);
+        NBPSellRate nbpSellRate = nbpService.getSellExchangeForCurrency(currency, date);
 
-        result = mapAndSaveInCache(currency, nbpRate, date);
+        result = mapAndSaveInCache(currency, nbpSellRate, date);
 
         return result;
     }
 
     @Override
-    public List<ExchangeForCurrency> buyPlnExchangeByCurrencies(List<String> currencies, Date date) {
-        return List.of();
+    public List<NBPMidRate> buyPlnExchangeByCurrencies(List<String> currencies, Date date) {
+
+        currencies = currencies.stream().map(currency -> currency.toUpperCase().trim()).toList();
+        List<NBPMidRate> nbpmidRateList = nbpService.getBuyExchangeForCurrencies(currencies, date);
+        nbpmidRateList.forEach(rate -> rate.setMid(BigDecimal.ONE.setScale(4, RoundingMode.HALF_UP).divide(rate.getMid(), RoundingMode.HALF_UP)));
+        return nbpmidRateList;
     }
 
-    private ExchangeForCurrency mapAndSaveInCache(String currency, NBPRate nbpRate, Date date) {
+    private ExchangeForCurrency mapAndSaveInCache(String currency, NBPSellRate nbpSellRate, Date date) {
         ExchangeForCurrency result;
         result = new ExchangeForCurrency();
         result.setCurrency(currency);
-        result.setRate(nbpRate.getBid());
+        result.setRate(nbpSellRate.getBid());
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
         result.setDate(formatter.format(date));
         log.debug("Save to cache {} for {}", currency, date);

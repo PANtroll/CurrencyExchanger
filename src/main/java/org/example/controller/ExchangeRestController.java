@@ -4,6 +4,7 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.logging.log4j.util.Strings;
 import org.example.service.ExchangeService;
 import org.example.to.ExchangeForCurrency;
+import org.example.to.NBPMidRate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -58,8 +59,8 @@ public class ExchangeRestController {
     }
 
     @GetMapping("/buy")
-    public ResponseEntity<List<ExchangeForCurrency>> getBuyExchangeForCurrencies(@RequestParam() String currencies, @RequestParam(required = false) String date) {//, @RequestParam BigDecimal money
-        ResponseEntity<List<ExchangeForCurrency>> result = null;
+    public ResponseEntity<List<NBPMidRate>> getBuyExchangeForCurrencies(@RequestParam() String currencies, @RequestParam(required = false) String date) {//, @RequestParam BigDecimal money
+        ResponseEntity<List<NBPMidRate>> result = null;
 
         log.debug("Request coming for getBuyExchangeForCurrencies with {} and {}", currencies, date);
         String[] currenciesArr = currencies.split(",");
@@ -69,7 +70,7 @@ public class ExchangeRestController {
         }
         List<String> currenciesList = Arrays.stream(currenciesArr).map(String::trim).toList();
         Date dateObject = parseDate(date);
-        List<ExchangeForCurrency> body = exchangeService.buyPlnExchangeByCurrencies(currenciesList, dateObject);
+        List<NBPMidRate> body = exchangeService.buyPlnExchangeByCurrencies(currenciesList, dateObject);
         result = new ResponseEntity<>(body, HttpStatus.OK);
 
         return result;

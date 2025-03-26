@@ -1,8 +1,10 @@
 package org.example.service;
 
 import lombok.extern.log4j.Log4j2;
-import org.example.to.NBPExchangeForCurrency;
-import org.example.to.NBPRate;
+import org.example.to.NBPMidExchange;
+import org.example.to.NBPMidRate;
+import org.example.to.NBPSellExchangeForCurrency;
+import org.example.to.NBPSellRate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,18 +27,18 @@ public class NBPServiceImpl implements NBPService {
     private String midURI;
 
     @Override
-    public NBPRate getSellExchangeForCurrency(String currency, Date date) {
-        NBPRate result = null;
+    public NBPSellRate getSellExchangeForCurrency(String currency, Date date) {
+        NBPSellRate result = null;
         try {
             SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
             String URL = sellURI + currency + '/' + formatter.format(date);
-            ResponseEntity<NBPExchangeForCurrency> fetchedObject = restTemplate.getForEntity(URL, NBPExchangeForCurrency.class);
+            ResponseEntity<NBPSellExchangeForCurrency> fetchedObject = restTemplate.getForEntity(URL, NBPSellExchangeForCurrency.class);
             if (!HttpStatus.OK.equals(fetchedObject.getStatusCode())) {
                 log.warn("Status code is not 200 for getting data from: " + sellURI);
                 return result;
             }
-            NBPExchangeForCurrency body = fetchedObject.getBody();
-            List<NBPRate> rates = body.getRates();
+            NBPSellExchangeForCurrency body = fetchedObject.getBody();
+            List<NBPSellRate> rates = body.getRates();
             if (rates == null || rates.isEmpty()) {
                 log.warn("No rates found for currency: " + currency);
                 return result;
@@ -54,7 +56,28 @@ public class NBPServiceImpl implements NBPService {
     }
 
     @Override
-    public List<NBPRate> getBuyExchangeForCurrencies(List<String> currencies, Date date) {
-        return null;
+    public List<NBPMidRate> getBuyExchangeForCurrencies(List<String> currencies, Date date) {//todo
+        List<NBPMidRate> result = null;
+        try {
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+            String URL = midURI + formatter.format(date);
+            ResponseEntity<NBPMidExchange[]> fetchedObject = restTemplate.getForEntity(URL, NBPMidExchange[].class);
+            if (!HttpStatus.OK.equals(fetchedObject.getStatusCode())) {
+                log.warn("Status code is not 200 for getting data from: " + sellURI);
+                return result;
+            }
+            NBPMidExchange body = fetchedObject.getBody()[0];
+            List<NBPMidRate> rates = body.getRates();
+            if (rates == null || rates.isEmpty()) {
+                log.warn("No rates found for currency: " + currencies);
+                return result;
+            }
+            result = rates.stream().filter(rate -> currencies.contains(rate.getCode())).toList();
+
+        } catch (Exception e) {
+            log.error("Error when fetching data from API: " + sellURI);
+        }
+
+        return result;
     }
 }

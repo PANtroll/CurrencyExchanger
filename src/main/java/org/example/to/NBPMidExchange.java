@@ -7,10 +7,11 @@ import java.util.List;
 
 @Data
 @RequiredArgsConstructor
-public class NBPExchangeForCurrency {
+public class NBPMidExchange {
 
     private String table;
-    private String currency;
-    private String code;
-    private List<NBPRate> rates;
+    private String no;
+    private String effectiveDate;
+    private List<NBPMidRate> rates;
 }
+
