@@ -18,18 +18,21 @@ import java.util.List;
 public class NBPServiceImpl implements NBPService {
 
     private final RestTemplate restTemplate = new RestTemplate();
-    @Value("${NBP.URI}")
-    private String URI;
+    @Value("${NBP.URI.sell}")
+    private String sellURI;
+
+    @Value("${NBP.URI.mid}")
+    private String midURI;
 
     @Override
     public NBPRate getSellExchangeForCurrency(String currency, Date date) {
         NBPRate result = null;
         try {
             SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-            String URL = URI + currency + '/' + formatter.format(date);
+            String URL = sellURI + currency + '/' + formatter.format(date);
             ResponseEntity<NBPExchangeForCurrency> fetchedObject = restTemplate.getForEntity(URL, NBPExchangeForCurrency.class);
             if (!HttpStatus.OK.equals(fetchedObject.getStatusCode())) {
-                log.warn("Status code is not 200 for getting data from: " + URI);
+                log.warn("Status code is not 200 for getting data from: " + sellURI);
                 return result;
             }
             NBPExchangeForCurrency body = fetchedObject.getBody();
@@ -44,7 +47,7 @@ public class NBPServiceImpl implements NBPService {
             result = rates.get(0);
 
         } catch (Exception e) {
-            log.error("Error when fetching data from API: " + URI);
+            log.error("Error when fetching data from API: " + sellURI);
         }
 
         return result;
