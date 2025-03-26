@@ -9,28 +9,24 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 @RestController
 @RequestMapping("/exchange")
 @Log4j2
 public class ExchangeRestController {
 
+    public static final String MINUS = "-";
     @Autowired
     ExchangeService exchangeService;
 
-    @GetMapping("/get/{currency}")
-    public ResponseEntity<ExchangeForCurrency> getSellExchangeForCurrency(@PathVariable String currency, @RequestParam(required = false) String date) {
-        ResponseEntity<ExchangeForCurrency> result = null;
-        log.debug("Request coming with {} and {}", currency, date);
-        if (Strings.isBlank(currency)) {
-            result = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-            return result;
-        }
+    private static Date parseDate(String date) {//todo date validation
         Date dateObject = null;
         if (date != null) {
-            String[] split = date.split("-");
+            String[] split = date.split(MINUS);
             Calendar calendar = Calendar.getInstance();
             calendar.clear();
             calendar.set(Calendar.YEAR, Integer.parseInt(split[0]));
@@ -43,7 +39,37 @@ public class ExchangeRestController {
             log.debug("Change future date {} to current", dateObject);
             dateObject = new Date();
         }
+        return dateObject;
+    }
+
+    @GetMapping("/sell/{currency}")
+    public ResponseEntity<ExchangeForCurrency> getSellExchangeForCurrency(@PathVariable String currency, @RequestParam(required = false) String date) {
+        ResponseEntity<ExchangeForCurrency> result = null;
+        log.debug("Request coming for getSellExchangeForCurrency with {} and {}", currency, date);
+        if (Strings.isBlank(currency)) {
+            result = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            return result;
+        }
+        Date dateObject = parseDate(date);
         ExchangeForCurrency body = exchangeService.getSellExchangeForCurrency(currency, dateObject);
+        result = new ResponseEntity<>(body, HttpStatus.OK);
+
+        return result;
+    }
+
+    @GetMapping("/buy")
+    public ResponseEntity<List<ExchangeForCurrency>> getBuyExchangeForCurrencies(@RequestParam() String currencies, @RequestParam(required = false) String date) {//, @RequestParam BigDecimal money
+        ResponseEntity<List<ExchangeForCurrency>> result = null;
+
+        log.debug("Request coming for getBuyExchangeForCurrencies with {} and {}", currencies, date);
+        String[] currenciesArr = currencies.split(",");
+        if (currenciesArr == null || currenciesArr.length == 0) {
+            result = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            return result;
+        }
+        List<String> currenciesList = Arrays.stream(currenciesArr).map(String::trim).toList();
+        Date dateObject = parseDate(date);
+        List<ExchangeForCurrency> body = exchangeService.buyPlnExchangeByCurrencies(currenciesList, dateObject);
         result = new ResponseEntity<>(body, HttpStatus.OK);
 
         return result;

@@ -10,7 +10,9 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -37,18 +39,24 @@ public class ExchangeServiceImpl implements ExchangeService {
         ExchangeForCurrency result = null;
         NBPRate nbpRate = nbpService.getSellExchangeForCurrency(currency, date);
 
-        result = mapAndSaveInCache(currency, nbpRate);
+        result = mapAndSaveInCache(currency, nbpRate, date);
 
         return result;
     }
 
-    private ExchangeForCurrency mapAndSaveInCache(String currency, NBPRate nbpRate) {
+    @Override
+    public List<ExchangeForCurrency> buyPlnExchangeByCurrencies(List<String> currencies, Date date) {
+        return List.of();
+    }
+
+    private ExchangeForCurrency mapAndSaveInCache(String currency, NBPRate nbpRate, Date date) {
         ExchangeForCurrency result;
         result = new ExchangeForCurrency();
         result.setCurrency(currency);
-        result.setRate(nbpRate.getMid());
-        result.setDate(nbpRate.getEffectiveDate());
-        log.debug("Save to cache {} for {}", currency, nbpRate.getEffectiveDate());
+        result.setRate(nbpRate.getBid());
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+        result.setDate(formatter.format(date));
+        log.debug("Save to cache {} for {}", currency, date);
         exchangeForCurrencyDAO.save(modelMapper.map(result, ExchangeForCurrencyEntity.class));
 
         return result;
