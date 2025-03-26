@@ -24,9 +24,9 @@ public class ExchangeServiceImpl implements ExchangeService {
 
     @Autowired
     private final NBPService nbpService;
-    private ModelMapper modelMapper = new ModelMapper();
     @Autowired
     private final ExchangeForCurrencyDAO exchangeForCurrencyDAO;
+    private ModelMapper modelMapper = new ModelMapper();
 
     @Override
     public ExchangeForCurrency getSellExchangeForCurrency(String currency, Date date) {

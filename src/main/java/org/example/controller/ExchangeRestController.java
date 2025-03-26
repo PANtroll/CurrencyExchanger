@@ -59,7 +59,7 @@ public class ExchangeRestController {
     }
 
     @GetMapping("/buy")
-    public ResponseEntity<List<NBPMidRate>> getBuyExchangeForCurrencies(@RequestParam() String currencies, @RequestParam(required = false) String date) {//, @RequestParam BigDecimal money
+    public ResponseEntity<List<NBPMidRate>> getBuyExchangeForCurrencies(@RequestParam() String currencies, @RequestParam(required = false) String date) {
         ResponseEntity<List<NBPMidRate>> result = null;
 
         log.debug("Request coming for getBuyExchangeForCurrencies with {} and {}", currencies, date);
